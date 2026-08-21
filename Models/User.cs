@@ -6,12 +6,12 @@ public class User
     public int Id { get; private set; }
     public string Name { get; private set; }
     public string PasswordHash { get; private set; }
-    
+
     // User financial data
     private List<Account> Accounts { get; }
-    
+
     public Budget Budget { get; private set; }
-    
+
     // Constructor
     public User(string name, string passwordHash)
     {
@@ -22,10 +22,20 @@ public class User
         Accounts = new List<Account>();
         Budget = new Budget();
     }
-    
+
     // Methods
     public void AddAccount(Account account)
     {
         Accounts.Add(account);
+    }
+
+    public IReadOnlyList<Account> GetAccounts()
+    {
+        return Accounts.AsReadOnly();
+    }
+
+    public Account? GetAccountById(int id)
+    {
+        return Accounts.FirstOrDefault(a => a.Id == id);
     }
 }
