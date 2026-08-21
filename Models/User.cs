@@ -8,7 +8,7 @@ public class User
     public string PasswordHash { get; private set; }
 
     // User financial data
-    private List<Account> Accounts { get; }
+    private List<Account> Accounts { get; } = new List<Account>();
 
     public Budget Budget { get; private set; }
 
@@ -19,9 +19,11 @@ public class User
         Name = name;
         PasswordHash = passwordHash;
 
-        Accounts = new List<Account>();
-        Budget = new Budget();
+        Budget = new Budget("Example Budget", this);
     }
+
+    // EF Core needs a way to construct this object when reading rows back from the database
+    private User() { }
 
     // Methods
     public void AddAccount(Account account)

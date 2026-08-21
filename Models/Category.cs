@@ -12,4 +12,7 @@ public class Category
         Id = 0;
         Name = name;
     }
+
+    // EF Core needs a way to construct this object when reading rows back from the database
+    private Category() { }
 }

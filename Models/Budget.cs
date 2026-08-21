@@ -10,82 +10,56 @@ public class Budget
     public DateTime StartDate { get; private set; }
     public DateTime EndDate { get; private set; }
 
-    // Budget information
-    private List<BudgetItem> StaticExpenses { get; }    // Fixed monthly expenses (e.g. rent) - shouldn't change much
-    private List<BudgetItem> VariableExpenses { get; }  // Categorized expenses that fluctuate month to month (e.g. food, gas)
-    private List<BudgetItem> Income { get; }             // Total monthly income
-    private decimal _freeBudget;                         // Income - (StaticExpenses + VariableExpenses)
+    // Foreign key + navigation to the owning User
+    public int UserId { get; private set; }
+    public User User { get; private set; }
+
+    // All budget items (income, static expenses, variable expenses) live in one
+    // backing collection, distinguished by BudgetItem.Type - mirrors one table in the DB.
+    private List<BudgetItem> Items { get; } = new List<BudgetItem>();
+
+    private decimal _freeBudget; // Income - (StaticExpenses + VariableExpenses)
 
     // Constructor
-    public Budget()
+    public Budget(string name, User user)
     {
         Id = 0;
-        Name = "Example Budget";
-
-        StaticExpenses = new List<BudgetItem>();
-        VariableExpenses = new List<BudgetItem>();
-        Income = new List<BudgetItem>();
+        Name = name;
+        User = user;
+        UserId = user.Id;
         _freeBudget = 0;
     }
 
-    // Methods - Income
-    public void AddIncome(BudgetItem income)
+    // EF Core needs a way to construct this object when reading rows back from the database
+    private Budget() { }
+
+    // Methods
+    public void AddItem(BudgetItem item)
     {
-        Income.Add(income);
+        Items.Add(item);
     }
 
-    public void UpdateIncome(int id, BudgetItem income)
-    {
-        throw new NotImplementedException();
-        // Eventually, this will be used to adjust income
-    }
-
-    public void RemoveIncome(int id)
+    public void UpdateItem(int id, BudgetItem item)
     {
         throw new NotImplementedException();
-        // Eventually, this will be used to remove income
+        // Eventually, this will be used to adjust any income/expense item
     }
 
-    // Methods - Static (fixed) expenses
-    public void AddStaticExpense(BudgetItem expense)
-    {
-        StaticExpenses.Add(expense);
-    }
-
-    public void UpdateStaticExpense(int id, BudgetItem expense)
+    public void RemoveItem(int id)
     {
         throw new NotImplementedException();
-        // Eventually, this will be used to adjust static expenses
+        // Eventually, this will be used to remove any income/expense item
     }
 
-    public void RemoveStaticExpense(int id)
-    {
-        throw new NotImplementedException();
-        // Eventually, this will be used to remove static expenses
-    }
+    // Filtered read-only views over the single backing list
+    public IReadOnlyList<BudgetItem> GetIncome() =>
+        Items.Where(i => i.Type == BudgetItemType.Income).ToList().AsReadOnly();
 
-    // Methods - Variable (categorized) expenses
-    public void AddVariableExpense(BudgetItem expense)
-    {
-        VariableExpenses.Add(expense);
-    }
+    public IReadOnlyList<BudgetItem> GetStaticExpenses() =>
+        Items.Where(i => i.Type == BudgetItemType.StaticExpense).ToList().AsReadOnly();
 
-    public void UpdateVariableExpense(int id, BudgetItem expense)
-    {
-        throw new NotImplementedException();
-        // Eventually, this will be used to adjust variable expenses
-    }
-
-    public void RemoveVariableExpense(int id)
-    {
-        throw new NotImplementedException();
-        // Eventually, this will be used to remove variable expenses
-    }
-
-    // Read-only accessors
-    public IReadOnlyList<BudgetItem> GetIncome() => Income.AsReadOnly();
-    public IReadOnlyList<BudgetItem> GetStaticExpenses() => StaticExpenses.AsReadOnly();
-    public IReadOnlyList<BudgetItem> GetVariableExpenses() => VariableExpenses.AsReadOnly();
+    public IReadOnlyList<BudgetItem> GetVariableExpenses() =>
+        Items.Where(i => i.Type == BudgetItemType.VariableExpense).ToList().AsReadOnly();
 
     public void CalculateFreeBudget()
     {
