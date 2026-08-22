@@ -45,9 +45,6 @@ public class Account
 
     public decimal GetBalance()
     {
-        throw new NotImplementedException();
-        // Eventually: sum Income/Expense events belonging to this account,
-        // plus/minus Transfer events depending on whether this account
-        // is the source or the DestinationAccountId.
+        return FinancialEvents.Sum(fe => fe.Amount);
     }
 }

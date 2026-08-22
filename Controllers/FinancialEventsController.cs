@@ -38,7 +38,8 @@ public class FinancialEventsController : ControllerBase
             Type = financialEvent.Type,
             CategoryId = financialEvent.CategoryId,
             CategoryName = financialEvent.Category?.Name,
-            DestinationAccountId = financialEvent.DestinationAccountId
+            TransferPairId = financialEvent.TransferPairId,
+            IsTransfer = financialEvent.IsTransfer
         };
         
         return Ok(responseDto);
@@ -62,7 +63,8 @@ public class FinancialEventsController : ControllerBase
             Type = fe.Type,
             CategoryId = fe.CategoryId,
             CategoryName = fe.Category?.Name,
-            DestinationAccountId = fe.DestinationAccountId
+            TransferPairId = fe.TransferPairId,
+            IsTransfer = fe.IsTransfer
         });
         
         return Ok(responseDtos);
@@ -86,6 +88,9 @@ public class FinancialEventsController : ControllerBase
             destinationAccount = await _context.Accounts.FindAsync(financialEventDto.DestinationAccountId.Value);
             if (destinationAccount == null)
                 return BadRequest("Destination account not found");
+
+            if (destinationAccount.Id == account.Id)
+                return BadRequest("Source and destination accounts must be different");
         }
         else
         {
@@ -101,12 +106,20 @@ public class FinancialEventsController : ControllerBase
 
         if (financialEventDto.Type == FinancialEventType.Transfer)
         {
-            newFinancialEvent = new FinancialEvent(
+            var (sourceEvent, destinationEvent) = FinancialEvent.CreateTransferPair(
                 financialEventDto.Description,
                 financialEventDto.Amount,
                 financialEventDto.Date,
                 account,
                 destinationAccount!);
+
+            _context.FinancialEvents.Add(sourceEvent);
+            _context.FinancialEvents.Add(destinationEvent);
+
+            await _context.SaveChangesAsync();
+
+            // Return the source event (the one for the requesting account)
+            newFinancialEvent = sourceEvent;
         }
         else
         {
@@ -117,11 +130,11 @@ public class FinancialEventsController : ControllerBase
                 account,
                 financialEventDto.Type,
                 category!);
-        }
 
-        _context.FinancialEvents.Add(newFinancialEvent);
-        
-        await _context.SaveChangesAsync();
+            _context.FinancialEvents.Add(newFinancialEvent);
+            
+            await _context.SaveChangesAsync();
+        }
 
         var responseDto = new FinancialEventResponseDto 
         { 
@@ -133,7 +146,8 @@ public class FinancialEventsController : ControllerBase
             Type = newFinancialEvent.Type,
             CategoryId = newFinancialEvent.CategoryId,
             CategoryName = category?.Name,
-            DestinationAccountId = newFinancialEvent.DestinationAccountId
+            TransferPairId = newFinancialEvent.TransferPairId,
+            IsTransfer = newFinancialEvent.IsTransfer
         };
         
         return CreatedAtAction(nameof(Get), new {id = newFinancialEvent.Id}, responseDto);
@@ -166,8 +180,7 @@ public class FinancialEventsController : ControllerBase
             edit.Amount, 
             edit.Date, 
             edit.Type, 
-            category, 
-            edit.DestinationAccountId);
+            category);
         
         _context.FinancialEvents.Update(financialEvent);
         await _context.SaveChangesAsync();
@@ -182,7 +195,8 @@ public class FinancialEventsController : ControllerBase
             Type = financialEvent.Type,
             CategoryId = financialEvent.CategoryId,
             CategoryName = financialEvent.Category?.Name,
-            DestinationAccountId = financialEvent.DestinationAccountId
+            TransferPairId = financialEvent.TransferPairId,
+            IsTransfer = financialEvent.IsTransfer
         };
         
         return Ok(responseDto);

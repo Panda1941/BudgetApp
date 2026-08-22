@@ -20,7 +20,9 @@ public class AccountsController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<ActionResult<AccountResponseDto>> Get(int id)
     {
-        var account = await _context.Accounts.FindAsync(id);
+        var account = await _context.Accounts
+            .Include("FinancialEvents")
+            .FirstOrDefaultAsync(a => a.Id == id);
 
         if (account == null)
             return NotFound();
@@ -33,7 +35,9 @@ public class AccountsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AccountResponseDto>>> GetAll()
     {
-        var accounts = await _context.Accounts.ToListAsync();
+        var accounts = await _context.Accounts
+            .Include("FinancialEvents")
+            .ToListAsync();
 
         IEnumerable<AccountResponseDto> responseDtos = accounts.Select(a => new AccountResponseDto{Id = a.Id, Name = a.Name, Balance = a.GetBalance()});
         

@@ -45,15 +45,6 @@ public class AppDbContext : DbContext
             .Navigation("FinancialEvents")
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
-        // ---- FinancialEvent -> DestinationAccount (optional, transfers only) ----
-        // No inverse collection needed on Account for this one.
-        modelBuilder.Entity<FinancialEvent>()
-            .HasOne<Account>()
-            .WithMany()
-            .HasForeignKey(fe => fe.DestinationAccountId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.Restrict);
-
         // ---- FinancialEvent -> Category (optional - null for transfers) ----
         modelBuilder.Entity<FinancialEvent>()
             .HasOne(fe => fe.Category)

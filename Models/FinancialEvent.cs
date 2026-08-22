@@ -25,47 +25,81 @@ public class FinancialEvent
     public int? CategoryId { get; private set; }
     public Category? Category { get; private set; }
 
-    // Only relevant when Type == Transfer. The account this event's money moves TO.
-    public int? DestinationAccountId { get; private set; }
+    // Links the two legs of a transfer together (both source and destination events share the same TransferPairId)
+    public Guid? TransferPairId { get; private set; }
+
+    // Indicates this event is part of a transfer (for reporting: exclude from budget/category spending stats)
+    public bool IsTransfer { get; private set; }
 
     // Constructor for Income/Expense
     public FinancialEvent(string description, decimal amount, DateTime date, Account account, FinancialEventType type, Category category)
     {
         if (type == FinancialEventType.Transfer)
-            throw new ArgumentException("Use the transfer constructor for Transfer events.");
-
+            throw new ArgumentException("Use CreateTransferPair for Transfer events.");
+        
         Id = 0;
         Description = description;
-        Amount = amount;
+        Amount = type == FinancialEventType.Expense ? -Math.Abs(amount) : Math.Abs(amount);
         Date = date;
         Account = account;
         AccountId = account.Id;
         Type = type;
         Category = category;
         CategoryId = category.Id;
+        TransferPairId = null;
+        IsTransfer = false;
     }
 
-    // Constructor for Transfer
-    public FinancialEvent(string description, decimal amount, DateTime date, Account account, Account destinationAccount)
+    // Constructor for Transfer (source account leg - amount should be negative)
+    public static (FinancialEvent SourceEvent, FinancialEvent DestinationEvent) CreateTransferPair(
+        string description,
+        decimal amount,
+        DateTime date,
+        Account sourceAccount,
+        Account destinationAccount)
     {
-        Id = 0;
-        Description = description;
-        Amount = amount;
-        Date = date;
-        Account = account;
-        AccountId = account.Id;
-        Type = FinancialEventType.Transfer;
-        DestinationAccountId = destinationAccount.Id;
-        Category = null;
+        var transferPairId = Guid.NewGuid();
+
+        var sourceEvent = new FinancialEvent
+        {
+            Id = 0,
+            Description = description,
+            Amount = -Math.Abs(amount),
+            Date = date,
+            Account = sourceAccount,
+            AccountId = sourceAccount.Id,
+            Type = FinancialEventType.Transfer,
+            Category = null,
+            CategoryId = null,
+            TransferPairId = transferPairId,
+            IsTransfer = true
+        };
+
+        var destinationEvent = new FinancialEvent
+        {
+            Id = 0,
+            Description = description,
+            Amount = Math.Abs(amount),
+            Date = date,
+            Account = destinationAccount,
+            AccountId = destinationAccount.Id,
+            Type = FinancialEventType.Transfer,
+            Category = null,
+            CategoryId = null,
+            TransferPairId = transferPairId,
+            IsTransfer = true
+        };
+
+        return (sourceEvent, destinationEvent);
     }
 
     // EF Core needs a way to construct this object when reading rows back from the database
     private FinancialEvent() { }
 
-    public void UpdateDetails(string description, decimal amount, DateTime date, FinancialEventType type, Category? category = null, int? destinationAccountId = null)
+    public void UpdateDetails(string description, decimal amount, DateTime date, FinancialEventType type, Category? category = null, Guid? transferPairId = null, bool isTransfer = false)
     {
         Description = description;
-        Amount = amount;
+        Amount = type == FinancialEventType.Expense ? -Math.Abs(amount) : Math.Abs(amount);
         Date = date;
         Type = type;
 
@@ -73,13 +107,15 @@ public class FinancialEvent
         {
             Category = null;
             CategoryId = null;
-            DestinationAccountId = destinationAccountId;
+            TransferPairId = transferPairId;
+            IsTransfer = isTransfer;
         }
         else
         {
             Category = category;
             CategoryId = category?.Id;
-            DestinationAccountId = null;
+            TransferPairId = null;
+            IsTransfer = false;
         }
     }
 }

@@ -14,5 +14,6 @@ public class FinancialEventResponseDto
     public int? CategoryId { get; set; }
     public string? CategoryName { get; set; }
 
-    public int? DestinationAccountId { get; set; }
+    public Guid? TransferPairId { get; set; }
+    public bool IsTransfer { get; set; }
 }
