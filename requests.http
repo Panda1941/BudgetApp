@@ -1,5 +1,9 @@
-﻿### Create a user
-POST http://localhost:5052/api/Users
+﻿@baseUrl = http://localhost:5052/api
+
+### ============ USERS ============
+
+### Create a user
+POST {{baseUrl}}/Users
 Content-Type: application/json
 
 {
@@ -8,7 +12,158 @@ Content-Type: application/json
 }
 
 ### Get all users
-GET http://localhost:5052/api/Users
+GET {{baseUrl}}/Users
 
-### Get one user by id
-GET http://localhost:5052/api/Users/1
+### Get one user by id (replace 1 with a real id from above)
+GET {{baseUrl}}/Users/1
+
+### Update a user (replace 1 with a real id)
+PUT {{baseUrl}}/Users/1
+Content-Type: application/json
+
+{
+  "name": "Paul Updated",
+  "password": "newpassword456"
+}
+
+### Delete a user (replace 99 with an id you don't mind deleting)
+DELETE {{baseUrl}}/Users/99
+
+
+### ============ CATEGORIES ============
+
+### Create a category
+POST {{baseUrl}}/Categories
+Content-Type: application/json
+
+{
+  "name": "Groceries"
+}
+
+### Get all categories
+GET {{baseUrl}}/Categories
+
+### Get one category by id
+GET {{baseUrl}}/Categories/1
+
+
+### ============ ACCOUNTS ============
+
+### Create Account A (replace userId with a real user id)
+POST {{baseUrl}}/Accounts
+Content-Type: application/json
+
+{
+  "name": "Checking",
+  "userId": 1
+}
+
+### Create Account B (same user, second account - needed for the transfer test below)
+POST {{baseUrl}}/Accounts
+Content-Type: application/json
+
+{
+  "name": "Savings",
+  "userId": 1
+}
+
+### Get all accounts (check Balance is 0 on both new accounts)
+GET {{baseUrl}}/Accounts
+
+### Get one account by id (replace 1 with a real account id)
+GET {{baseUrl}}/Accounts/1
+
+
+### ============ FINANCIAL EVENTS ============
+
+### Add income to Account A (replace accountId, categoryId with real ids)
+POST {{baseUrl}}/FinancialEvents
+Content-Type: application/json
+
+{
+  "description": "Paycheck",
+  "amount": 1000,
+  "date": "2026-08-22T00:00:00Z",
+  "accountId": 1,
+  "type": "Income",
+  "categoryId": 1
+}
+
+### Check Account A's balance went up (should be 1000)
+GET {{baseUrl}}/Accounts/1
+
+### Add an expense to Account A
+POST {{baseUrl}}/FinancialEvents
+Content-Type: application/json
+
+{
+  "description": "Groceries run",
+  "amount": 150,
+  "date": "2026-08-22T00:00:00Z",
+  "accountId": 1,
+  "type": "Expense",
+  "categoryId": 1
+}
+
+### Check Account A's balance went down (should be 850)
+GET {{baseUrl}}/Accounts/1
+
+### Transfer 200 from Account A to Account B (replace accountId/destinationAccountId with real ids)
+POST {{baseUrl}}/FinancialEvents
+Content-Type: application/json
+
+{
+  "description": "Move to savings",
+  "amount": 200,
+  "date": "2026-08-22T00:00:00Z",
+  "accountId": 1,
+  "type": "Transfer",
+  "destinationAccountId": 2
+}
+
+### Check Account A went down by 200 (should be 650)
+GET {{baseUrl}}/Accounts/1
+
+### Check Account B went up by 200 (should be 200) - this is the real test of the two-leg transfer logic
+GET {{baseUrl}}/Accounts/2
+
+### Get all financial events (confirm the transfer created two rows sharing a TransferPairId)
+GET {{baseUrl}}/FinancialEvents
+
+
+### ============ BUDGETS ============
+
+### Create a budget for a user (replace userId with a real id)
+POST {{baseUrl}}/Budgets
+Content-Type: application/json
+
+{
+  "name": "August Budget",
+  "userId": 1,
+  "startDate": "2026-08-01T00:00:00Z",
+  "endDate": "2026-08-31T00:00:00Z"
+}
+
+### Get all budgets
+GET {{baseUrl}}/Budgets
+
+### Get one budget by id
+GET {{baseUrl}}/Budgets/1
+
+
+### ============ BUDGET ITEMS ============
+
+### Add a budget item (replace categoryId, budgetId with real ids)
+POST {{baseUrl}}/BudgetItems
+Content-Type: application/json
+
+{
+  "name": "Rent",
+  "amount": 1200,
+  "type": "StaticExpense",
+  "categoryId": 1,
+  "budgetId": 1
+}
+
+### Get all budget items
+GET {{baseUrl}}/BudgetItems
