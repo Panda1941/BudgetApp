@@ -30,6 +30,12 @@ public class User
     {
         Accounts.Add(account);
     }
+    
+    public void UpdateDetails(string name, string passwordHash)
+    {
+        Name = name;
+        PasswordHash = passwordHash;
+    }
 
     public IReadOnlyList<Account> GetAccounts()
     {
