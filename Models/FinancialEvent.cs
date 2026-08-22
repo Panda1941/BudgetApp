@@ -61,4 +61,25 @@ public class FinancialEvent
 
     // EF Core needs a way to construct this object when reading rows back from the database
     private FinancialEvent() { }
+
+    public void UpdateDetails(string description, decimal amount, DateTime date, FinancialEventType type, Category? category = null, int? destinationAccountId = null)
+    {
+        Description = description;
+        Amount = amount;
+        Date = date;
+        Type = type;
+
+        if (type == FinancialEventType.Transfer)
+        {
+            Category = null;
+            CategoryId = null;
+            DestinationAccountId = destinationAccountId;
+        }
+        else
+        {
+            Category = category;
+            CategoryId = category?.Id;
+            DestinationAccountId = null;
+        }
+    }
 }

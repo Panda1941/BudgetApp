@@ -33,6 +33,11 @@ public class Account
         FinancialEvents.Add(financialEvent);
     }
 
+    public void UpdateName(string name)
+    {
+        Name = name;
+    }
+
     public IReadOnlyList<FinancialEvent> GetFinancialEvents()
     {
         return FinancialEvents.AsReadOnly();

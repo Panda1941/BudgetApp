@@ -38,4 +38,13 @@ public class BudgetItem
 
     // EF Core needs a way to construct this object when reading rows back from the database
     private BudgetItem() { }
+
+    public void UpdateDetails(string name, decimal amount, BudgetItemType type, Category category)
+    {
+        Name = name;
+        Amount = amount;
+        Type = type;
+        Category = category;
+        CategoryId = category.Id;
+    }
 }

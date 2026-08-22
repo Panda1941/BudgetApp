@@ -27,6 +27,19 @@ public class Budget
         Name = name;
         User = user;
         UserId = user.Id;
+        StartDate = DateTime.UtcNow;
+        EndDate = DateTime.UtcNow.AddMonths(1);
+        _freeBudget = 0;
+    }
+
+    public Budget(string name, User user, DateTime startDate, DateTime endDate)
+    {
+        Id = 0;
+        Name = name;
+        User = user;
+        UserId = user.Id;
+        StartDate = startDate;
+        EndDate = endDate;
         _freeBudget = 0;
     }
 
@@ -49,6 +62,13 @@ public class Budget
     {
         throw new NotImplementedException();
         // Eventually, this will be used to remove any income/expense item
+    }
+
+    public void UpdateDetails(string name, DateTime startDate, DateTime endDate)
+    {
+        Name = name;
+        StartDate = startDate;
+        EndDate = endDate;
     }
 
     // Filtered read-only views over the single backing list

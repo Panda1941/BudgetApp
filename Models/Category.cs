@@ -15,4 +15,9 @@ public class Category
 
     // EF Core needs a way to construct this object when reading rows back from the database
     private Category() { }
+
+    public void UpdateName(string name)
+    {
+        Name = name;
+    }
 }
