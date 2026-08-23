@@ -1,0 +1,53 @@
+@model BudgetApp.Dtos.CreateBudgetItemDto
+
+@{
+    ViewData["Title"] = "Edit Budget Item";
+    var item = ViewBag.Item as BudgetApp.Dtos.BudgetItemResponseDto;
+    var budgetId = ViewBag.BudgetId;
+    var categories = ViewBag.Categories as List<BudgetApp.Dtos.CategoryResponseDto>;
+    var userId = ViewBag.UserId;
+}
+
+<div class="admin-header">
+    <h1>Edit Budget Item</h1>
+</div>
+
+<form asp-action="EditItem" asp-route-id="@item.Id" method="post" class="admin-form">
+    <input type="hidden" asp-for="BudgetId" />
+    
+    <div class="form-group">
+        <label asp-for="Name">Name</label>
+        <input asp-for="Name" class="form-input" />
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="Amount">Amount</label>
+        <input asp-for="Amount" type="number" step="0.01" min="0.01" class="form-input" />
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="Type">Type</label>
+        <select name="Type" class="form-input">
+            <option value="Income" selected="@(item.Type == BudgetApp.Models.BudgetItemType.Income)">Income</option>
+            <option value="StaticExpense" selected="@(item.Type == BudgetApp.Models.BudgetItemType.StaticExpense)">Static Expense</option>
+            <option value="VariableExpense" selected="@(item.Type == BudgetApp.Models.BudgetItemType.VariableExpense)">Variable Expense</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="CategoryId">Category</label>
+        <select name="CategoryId" class="form-input">
+            <option value="">Select category</option>
+            @foreach (var cat in categories)
+            {
+                var isSelected = item.CategoryId == cat.Id;
+                <option value="@cat.Id" selected="@isSelected">@cat.Name</option>
+            }
+        </select>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Save</button>
+        <a asp-action="Index" class="btn-cancel">Cancel</a>
+    </div>
+</form>

@@ -1,0 +1,149 @@
+@model BudgetApp.Models.Budget
+
+@{
+    ViewData["Title"] = "Budget";
+    var userId = ViewBag.UserId;
+    var items = ViewBag.BudgetItems as List<BudgetApp.Models.BudgetItem> ?? new List<BudgetApp.Models.BudgetItem>();
+    
+    var income = items.Where(i => i.Type == BudgetApp.Models.BudgetItemType.Income).ToList();
+    var staticExpenses = items.Where(i => i.Type == BudgetApp.Models.BudgetItemType.StaticExpense).ToList();
+    var variableExpenses = items.Where(i => i.Type == BudgetApp.Models.BudgetItemType.VariableExpense).ToList();
+}
+
+<div class="admin-header">
+    <h1>Budget</h1>
+</div>
+
+@if (Model == null)
+{
+    <div class="admin-form" style="max-width: 500px; text-align: center; padding: 40px 24px;">
+        <p class="empty-state" style="margin-bottom: 24px; font-size: 1.1rem;">No budget created yet.</p>
+        <a asp-action="Create" asp-route-userId="@userId" class="btn-primary">Create Budget</a>
+    </div>
+}
+else
+{
+    <div style="margin-bottom: 24px;">
+        <h2>@Model.Name</h2>
+        <p>Period: @Model.StartDate.ToString("yyyy-MM-dd") to @Model.EndDate.ToString("yyyy-MM-dd")</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-edit">Edit Budget</a>
+            <form asp-action="Delete" asp-route-id="@Model.Id" method="post"
+                  onsubmit="return confirm('Delete this budget? This cannot be undone.');"
+                  style="display:inline;">
+                <button type="submit" class="btn-delete">Delete Budget</button>
+            </form>
+            <a asp-action="AddItem" asp-route-budgetId="@Model.Id" class="btn-primary" style="font-size: 0.85rem; padding: 4px 10px;">Add Budget Item</a>
+        </div>
+    </div>
+
+    @if (income.Count > 0)
+    {
+        <section style="margin-bottom: 32px;">
+            <h3 style="color: #1a7f37; margin-bottom: 12px;">Income</h3>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in income)
+                    {
+                        <tr>
+                            <td>@item.Name</td>
+                            <td>@item.Category?.Name</td>
+                            <td style="color: #1a7f37;">@item.Amount.ToString("C")</td>
+                            <td class="actions">
+                                <a asp-action="EditItem" asp-route-id="@item.Id" class="btn-edit">Edit</a>
+                                <form asp-action="DeleteItem" asp-route-id="@item.Id" method="post"
+                                      onsubmit="return confirm('Delete this budget item?');"
+                                      style="display:inline;">
+                                    <button type="submit" class="btn-delete">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </section>
+    }
+
+    @if (staticExpenses.Count > 0)
+    {
+        <section style="margin-bottom: 32px;">
+            <h3 style="color: #d33; margin-bottom: 12px;">Static Expenses</h3>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in staticExpenses)
+                    {
+                        <tr>
+                            <td>@item.Name</td>
+                            <td>@item.Category?.Name</td>
+                            <td style="color: #d33;">@item.Amount.ToString("C")</td>
+                            <td class="actions">
+                                <a asp-action="EditItem" asp-route-id="@item.Id" class="btn-edit">Edit</a>
+                                <form asp-action="DeleteItem" asp-route-id="@item.Id" method="post"
+                                      onsubmit="return confirm('Delete this budget item?');"
+                                      style="display:inline;">
+                                    <button type="submit" class="btn-delete">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </section>
+    }
+
+    @if (variableExpenses.Count > 0)
+    {
+        <section>
+            <h3 style="color: #b54708; margin-bottom: 12px;">Variable Expenses</h3>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in variableExpenses)
+                    {
+                        <tr>
+                            <td>@item.Name</td>
+                            <td>@item.Category?.Name</td>
+                            <td style="color: #b54708;">@item.Amount.ToString("C")</td>
+                            <td class="actions">
+                                <a asp-action="EditItem" asp-route-id="@item.Id" class="btn-edit">Edit</a>
+                                <form asp-action="DeleteItem" asp-route-id="@item.Id" method="post"
+                                      onsubmit="return confirm('Delete this budget item?');"
+                                      style="display:inline;">
+                                    <button type="submit" class="btn-delete">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </section>
+    }
+
+    @if (income.Count == 0 && staticExpenses.Count == 0 && variableExpenses.Count == 0)
+    {
+        <p class="empty-state">No budget items yet. Add your first item to get started.</p>
+    }
+}

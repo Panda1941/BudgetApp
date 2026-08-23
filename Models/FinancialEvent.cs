@@ -48,6 +48,8 @@ public class FinancialEvent
         CategoryId = category.Id;
         TransferPairId = null;
         IsTransfer = false;
+
+        account.AddFinancialEvent(this);
     }
 
     // Constructor for Transfer (source account leg - amount should be negative)
@@ -89,6 +91,9 @@ public class FinancialEvent
             TransferPairId = transferPairId,
             IsTransfer = true
         };
+
+        sourceAccount.AddFinancialEvent(sourceEvent);
+        destinationAccount.AddFinancialEvent(destinationEvent);
 
         return (sourceEvent, destinationEvent);
     }

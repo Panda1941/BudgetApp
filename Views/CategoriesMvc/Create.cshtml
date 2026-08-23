@@ -1,0 +1,21 @@
+@model BudgetApp.Dtos.CreateCategoryDto
+
+@{
+    ViewData["Title"] = "Create Category";
+    var userId = ViewBag.UserId;
+}
+
+<div class="admin-header">
+    <h1>Create Category</h1>
+</div>
+
+<form asp-action="Create" method="post" class="admin-form">
+    <div class="form-group">
+        <label asp-for="Name">Name</label>
+        <input asp-for="Name" class="form-input" placeholder="e.g., Food, Transport, Entertainment" />
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Create</button>
+        <a asp-action="Index" class="btn-cancel">Cancel</a>
+    </div>
+</form>

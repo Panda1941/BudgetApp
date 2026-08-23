@@ -1,0 +1,44 @@
+@model List<BudgetApp.Dtos.CategoryResponseDto>
+
+@{
+    ViewData["Title"] = "Categories";
+    var userId = ViewBag.UserId;
+}
+
+<div class="admin-header">
+    <h1>Categories</h1>
+    <p>@Model.Count category(s) — <a asp-action="Create" class="btn-primary" style="font-size: 0.85rem; padding: 4px 10px;">Add Category</a></p>
+</div>
+
+@if (Model.Count == 0)
+{
+    <p class="empty-state">No categories yet. Create your first category to get started.</p>
+}
+else
+{
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var category in Model)
+            {
+                <tr>
+                    <td>@category.Id</td>
+                    <td>@category.Name</td>
+                    <td class="actions">
+                        <form asp-action="Delete" asp-route-id="@category.Id" method="post"
+                              onsubmit="return confirm('Delete this category? This cannot be undone.');"
+                              style="display:inline;">
+                            <button type="submit" class="btn-delete">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

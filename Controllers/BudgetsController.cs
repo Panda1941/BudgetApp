@@ -17,6 +17,11 @@ public class BudgetsController : ControllerBase
         _context = context;
     }
 
+    private static DateTime ToUtc(DateTime dt)
+    {
+        return dt.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(dt, DateTimeKind.Utc) : dt.ToUniversalTime();
+    }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<BudgetResponseDto>> Get(int id)
     {
@@ -65,7 +70,12 @@ public class BudgetsController : ControllerBase
         if (user == null)
             return BadRequest("User not found");
 
-        var newBudget = new Budget(budgetDto.Name, user, budgetDto.StartDate, budgetDto.EndDate);
+        // Guard: one budget per user
+        var existingBudget = await _context.Budgets.FirstOrDefaultAsync(b => b.UserId == budgetDto.UserId);
+        if (existingBudget != null)
+            return BadRequest("User already has a budget");
+
+        var newBudget = new Budget(budgetDto.Name, user, ToUtc(budgetDto.StartDate), ToUtc(budgetDto.EndDate));
 
         _context.Budgets.Add(newBudget);
         
@@ -91,7 +101,7 @@ public class BudgetsController : ControllerBase
         if (budget == null)
             return NotFound();
 
-        budget.UpdateDetails(edit.Name, edit.StartDate, edit.EndDate);
+        budget.UpdateDetails(edit.Name, ToUtc(edit.StartDate), ToUtc(edit.EndDate));
         
         _context.Budgets.Update(budget);
         await _context.SaveChangesAsync();

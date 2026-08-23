@@ -1,0 +1,22 @@
+@model BudgetApp.Dtos.CreateAccountDto
+
+@{
+    ViewData["Title"] = "Create Account";
+    var userId = ViewBag.UserId;
+}
+
+<div class="admin-header">
+    <h1>Create Account</h1>
+</div>
+
+<form asp-action="Create" method="post" class="admin-form">
+    <input type="hidden" asp-for="UserId" />
+    <div class="form-group">
+        <label asp-for="Name">Name</label>
+        <input asp-for="Name" class="form-input" placeholder="e.g., Checking, Savings, Credit Card" />
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Create</button>
+        <a asp-action="Index" asp-route-userId="@userId" class="btn-cancel">Cancel</a>
+    </div>
+</form>

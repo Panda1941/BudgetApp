@@ -17,6 +17,11 @@ public class FinancialEventsController : ControllerBase
         _context = context;
     }
 
+    private static DateTime ToUtc(DateTime dt)
+    {
+        return dt.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(dt, DateTimeKind.Utc) : dt.ToUniversalTime();
+    }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<FinancialEventResponseDto>> Get(int id)
     {
@@ -103,13 +108,14 @@ public class FinancialEventsController : ControllerBase
         }
 
         FinancialEvent newFinancialEvent;
+        var date = ToUtc(financialEventDto.Date);
 
         if (financialEventDto.Type == FinancialEventType.Transfer)
         {
             var (sourceEvent, destinationEvent) = FinancialEvent.CreateTransferPair(
                 financialEventDto.Description,
                 financialEventDto.Amount,
-                financialEventDto.Date,
+                date,
                 account,
                 destinationAccount!);
 
@@ -126,7 +132,7 @@ public class FinancialEventsController : ControllerBase
             newFinancialEvent = new FinancialEvent(
                 financialEventDto.Description,
                 financialEventDto.Amount,
-                financialEventDto.Date,
+                date,
                 account,
                 financialEventDto.Type,
                 category!);
@@ -178,7 +184,7 @@ public class FinancialEventsController : ControllerBase
         financialEvent.UpdateDetails(
             edit.Description, 
             edit.Amount, 
-            edit.Date, 
+            ToUtc(edit.Date), 
             edit.Type, 
             category);
         

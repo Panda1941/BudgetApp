@@ -1,0 +1,51 @@
+@model BudgetApp.Dtos.CreateBudgetItemDto
+
+@{
+    ViewData["Title"] = "Add Budget Item";
+    var budget = ViewBag.Budget as BudgetApp.Dtos.BudgetResponseDto;
+    var categories = ViewBag.Categories as List<BudgetApp.Dtos.CategoryResponseDto>;
+    var userId = ViewBag.UserId;
+}
+
+<div class="admin-header">
+    <h1>Add Budget Item to @budget.Name</h1>
+</div>
+
+<form asp-action="AddItem" asp-route-budgetId="@budget.Id" method="post" class="admin-form">
+    <input type="hidden" asp-for="BudgetId" />
+    
+    <div class="form-group">
+        <label asp-for="Name">Name</label>
+        <input asp-for="Name" class="form-input" placeholder="e.g., Salary, Rent, Groceries" />
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="Amount">Amount</label>
+        <input asp-for="Amount" type="number" step="0.01" min="0.01" class="form-input" placeholder="1000.00" />
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="Type">Type</label>
+        <select asp-for="Type" class="form-input">
+            <option value="Income">Income</option>
+            <option value="StaticExpense">Static Expense</option>
+            <option value="VariableExpense">Variable Expense</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="CategoryId">Category</label>
+        <select asp-for="CategoryId" class="form-input">
+            <option value="">Select category</option>
+            @foreach (var cat in categories)
+            {
+                <option value="@cat.Id">@cat.Name</option>
+            }
+        </select>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Add Item</button>
+        <a asp-action="Index" class="btn-cancel">Cancel</a>
+    </div>
+</form>

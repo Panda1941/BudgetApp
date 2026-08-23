@@ -21,13 +21,16 @@ public class AccountsController : ControllerBase
     public async Task<ActionResult<AccountResponseDto>> Get(int id)
     {
         var account = await _context.Accounts
-            .Include("FinancialEvents")
             .FirstOrDefaultAsync(a => a.Id == id);
 
         if (account == null)
             return NotFound();
 
-        var responseDto = new AccountResponseDto { Id = account.Id, Name = account.Name, Balance = account.GetBalance() };
+        var balance = await _context.FinancialEvents
+            .Where(fe => fe.AccountId == id)
+            .SumAsync(fe => (decimal?)fe.Amount) ?? 0;
+
+        var responseDto = new AccountResponseDto { Id = account.Id, Name = account.Name, Balance = balance };
         
         return Ok(responseDto);
     }
@@ -35,13 +38,18 @@ public class AccountsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AccountResponseDto>>> GetAll()
     {
-        var accounts = await _context.Accounts
-            .Include("FinancialEvents")
-            .ToListAsync();
+        var accounts = await _context.Accounts.ToListAsync();
 
-        IEnumerable<AccountResponseDto> responseDtos = accounts.Select(a => new AccountResponseDto{Id = a.Id, Name = a.Name, Balance = a.GetBalance()});
+        var accountDtos = new List<AccountResponseDto>();
+        foreach (var account in accounts)
+        {
+            var balance = await _context.FinancialEvents
+                .Where(fe => fe.AccountId == account.Id)
+                .SumAsync(fe => (decimal?)fe.Amount) ?? 0;
+            accountDtos.Add(new AccountResponseDto { Id = account.Id, Name = account.Name, Balance = balance });
+        }
         
-        return Ok(responseDtos);
+        return Ok(accountDtos);
     }
     
     [HttpPost]
@@ -75,7 +83,11 @@ public class AccountsController : ControllerBase
         _context.Accounts.Update(account);
         await _context.SaveChangesAsync();
         
-        var responseDto = new AccountResponseDto {Id = account.Id, Name = account.Name, Balance = account.GetBalance()};
+        var balance = await _context.FinancialEvents
+            .Where(fe => fe.AccountId == id)
+            .SumAsync(fe => (decimal?)fe.Amount) ?? 0;
+        
+        var responseDto = new AccountResponseDto {Id = account.Id, Name = account.Name, Balance = balance};
         
         return Ok(responseDto);
     }

@@ -1,0 +1,23 @@
+@model BudgetApp.Dtos.CreateAccountDto
+
+@{
+    ViewData["Title"] = "Edit Account";
+    var accountId = ViewBag.AccountId;
+    var userId = ViewBag.UserId;
+}
+
+<div class="admin-header">
+    <h1>Edit Account</h1>
+</div>
+
+<form asp-action="Edit" asp-route-id="@accountId" method="post" class="admin-form">
+    <input type="hidden" asp-for="UserId" />
+    <div class="form-group">
+        <label asp-for="Name">Name</label>
+        <input asp-for="Name" class="form-input" />
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Save</button>
+        <a asp-action="Detail" asp-route-id="@accountId" class="btn-cancel">Cancel</a>
+    </div>
+</form>

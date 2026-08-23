@@ -1,0 +1,89 @@
+@model BudgetApp.Dtos.CreateFinancialEventDto
+
+@{
+    ViewData["Title"] = "Edit Transaction";
+    var fe = ViewBag.FinancialEvent as BudgetApp.Dtos.FinancialEventResponseDto;
+    var categories = ViewBag.Categories as List<BudgetApp.Dtos.CategoryResponseDto>;
+    var otherAccounts = ViewBag.OtherAccounts as List<BudgetApp.Dtos.AccountResponseDto>;
+    var userId = ViewBag.UserId;
+}
+
+<div class="admin-header">
+    <h1>Edit Transaction</h1>
+</div>
+
+<form asp-action="EditTransaction" asp-route-id="@fe.Id" method="post" class="admin-form">
+    <input type="hidden" asp-for="AccountId" />
+    <input type="hidden" asp-for="DestinationAccountId" />
+    
+    <div class="form-group">
+        <label asp-for="Description">Description</label>
+        <input asp-for="Description" class="form-input" />
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="Amount">Amount</label>
+        <input asp-for="Amount" type="number" step="0.01" min="0.01" class="form-input" />
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="Date">Date</label>
+        <input asp-for="Date" type="date" class="form-input" />
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="Type">Type</label>
+        <select name="Type" class="form-input" id="type-select" onchange="toggleFields()">
+            <option value="Income" selected="@(fe.Type == BudgetApp.Models.FinancialEventType.Income)">Income</option>
+            <option value="Expense" selected="@(fe.Type == BudgetApp.Models.FinancialEventType.Expense)">Expense</option>
+            <option value="Transfer" selected="@(fe.Type == BudgetApp.Models.FinancialEventType.Transfer)">Transfer</option>
+        </select>
+    </div>
+    
+    <div class="form-group" id="category-field">
+        <label asp-for="CategoryId">Category</label>
+        <select name="CategoryId" class="form-input">
+            <option value="">Select category</option>
+            @foreach (var cat in categories)
+            {
+                var isSelected = fe.CategoryId.HasValue && fe.CategoryId.Value == cat.Id;
+                <option value="@cat.Id" selected="@isSelected">@cat.Name</option>
+            }
+        </select>
+    </div>
+    
+    <div class="form-group" id="transfer-field" style="display: none;">
+        <label asp-for="DestinationAccountId">Destination Account</label>
+        <select name="DestinationAccountId" class="form-input">
+            <option value="">Select destination account</option>
+            @foreach (var acc in otherAccounts)
+            {
+                <option value="@acc.Id">@acc.Name (@acc.Balance.ToString("C"))</option>
+            }
+        </select>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Save</button>
+        <a asp-action="Detail" asp-route-id="@fe.AccountId" class="btn-cancel">Cancel</a>
+    </div>
+</form>
+
+<script>
+    function toggleFields() {
+        var type = document.getElementById('type-select').value;
+        var categoryField = document.getElementById('category-field');
+        var transferField = document.getElementById('transfer-field');
+        
+        if (type === 'Transfer') {
+            categoryField.style.display = 'none';
+            transferField.style.display = 'block';
+        } else {
+            categoryField.style.display = 'block';
+            transferField.style.display = 'none';
+        }
+    }
+    
+    // Initialize on page load
+    toggleFields();
+</script>

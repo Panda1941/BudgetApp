@@ -1,0 +1,68 @@
+@model List<BudgetApp.Dtos.FinancialEventResponseDto>
+
+@{
+    ViewData["Title"] = "Account Detail";
+    var account = ViewBag.Account as BudgetApp.Dtos.AccountResponseDto;
+    var userId = ViewBag.UserId;
+}
+
+<div class="admin-header">
+    <h1>@account.Name</h1>
+    <p>Balance: <strong>@account.Balance.ToString("C")</strong> | <a asp-action="AddTransaction" asp-route-accountId="@account.Id" class="btn-primary" style="font-size: 0.85rem; padding: 4px 10px;">Add Transaction</a></p>
+</div>
+
+<div style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
+    <a asp-action="Edit" asp-route-id="@account.Id" class="btn-edit">Edit Account</a>
+    <form asp-action="Delete" asp-route-id="@account.Id" method="post"
+          onsubmit="return confirm('Delete this account? This cannot be undone.');"
+          style="display:inline;">
+        <button type="submit" class="btn-delete">Delete Account</button>
+    </form>
+    <a asp-action="Index" class="btn-cancel">Back to Accounts</a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <p class="empty-state">No transactions yet. Add your first transaction to get started.</p>
+}
+else
+{
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var fe in Model)
+            {
+                var amountClass = fe.Amount >= 0 ? "style=\"color: #1a7f37;\"" : "style=\"color: #d33;\"";
+                var typeLabel = fe.Type.ToString();
+                if (fe.IsTransfer)
+                {
+                    typeLabel = fe.Amount < 0 ? "Transfer Out" : "Transfer In";
+                }
+                <tr>
+                    <td>@fe.Date.ToString("yyyy-MM-dd")</td>
+                    <td>@fe.Description</td>
+                    <td>@typeLabel</td>
+                    <td>@(fe.CategoryName ?? "—")</td>
+                    <td @amountClass>@fe.Amount.ToString("C")</td>
+                    <td class="actions">
+                        <a asp-action="EditTransaction" asp-route-id="@fe.Id" class="btn-edit">Edit</a>
+                        <form asp-action="DeleteTransaction" asp-route-id="@fe.Id" method="post"
+                              onsubmit="return confirm('Delete this transaction? This cannot be undone.');"
+                              style="display:inline;">
+                            <button type="submit" class="btn-delete">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
